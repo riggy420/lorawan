@@ -1,9 +1,9 @@
 # ITSO 
 
-## How to start the server
+### How to start the server
 
 
-## Architure
+### Architure
 
 Backend (Gin), Database (influxDB)
 

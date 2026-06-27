@@ -1,4 +1,4 @@
-package lorwan
+package lorawan
 
 import (
 	"fmt"
