@@ -9,6 +9,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/riggy420/lorawan/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -25,25 +26,56 @@ func startServer() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Load config from config.yaml
+	cfg, err := LoadConfig()
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	if len(cfg.Websocket.URLs) == 0 {
+		log.Fatal("config: no websocket URLs configured")
+	}
+
 	var wg sync.WaitGroup
 	statusChan := make(chan string, 8)
 
 	fmt.Println("Starting LoRaWAN server...")
 
-	wsClient := NewWSClient("ws://loranet01.ust.hk:7002/owner-c::2")
+	// Create a WSClient per configured URL
+	clients := make([]*WSClient, 0, len(cfg.Websocket.URLs))
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := wsClient.Connect(ctx); err != nil {
-			statusChan <- fmt.Sprintf("WebSocket error: %v", err)
-			log.Printf("websocket: error: %v", err)
-			cancel()
-			return
+	for _, rawURL := range cfg.Websocket.URLs {
+		wsClient := NewWSClient(rawURL)
+
+		// Wire up the parser to handle incoming messages
+		url := rawURL // capture for closure
+		wsClient.OnMsg = func(raw []byte) {
+			entries, err := internal.Parse(raw)
+			if err != nil {
+				log.Printf("[%s] parse error: %v", url, err)
+				return
+			}
+			for _, entry := range entries {
+				log.Printf("[%s] %s: %v", url, entry.Label, entry.Value)
+			}
 		}
-		statusChan <- "WebSocket: connected to loranet01.ust.hk:7002"
-	}()
 
+		clients = append(clients, wsClient)
+
+		wg.Add(1)
+		go func(wsc *WSClient, u string) {
+			defer wg.Done()
+			if err := wsc.Connect(ctx); err != nil {
+				statusChan <- fmt.Sprintf("WebSocket error [%s]: %v", u, err)
+				log.Printf("websocket [%s]: error: %v", u, err)
+				cancel()
+				return
+			}
+			statusChan <- fmt.Sprintf("WebSocket: connected to %s", u)
+		}(wsClient, rawURL)
+	}
+
+	// Status logger
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -52,6 +84,7 @@ func startServer() {
 		}
 	}()
 
+	// Wait for shutdown signal
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 
@@ -65,7 +98,10 @@ func startServer() {
 	cancel()
 	log.Println("shutting down...")
 
-	wsClient.Close()
+	for _, wsClient := range clients {
+		wsClient.Close()
+	}
+
 	close(statusChan)
 	wg.Wait()
 
