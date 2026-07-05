@@ -9,6 +9,7 @@ endif
 build:
 	go build -o $(BIN) main.go
 	@echo "Build complete. Run '$(BIN)' to execute the program."
+	go install .
 
 run: build
 	./$(BIN) start

@@ -3,7 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	// "log"
 	"time"
 )
 
@@ -34,6 +34,12 @@ type upinfoItem struct {
 type messageRaw struct {
 	DevAddr any          `json:"DevAddr"`
 	Freq    any          `json:"Freq"`
+	Region any          `json:"region"`
+	Msgtype any 		`json:"msgtype"`
+	FPort any 		`json:"FPort"`	
+	SessID any 		`json:"SessID"`
+	DeviceEui any 		`json:"DevEui"`
+	DR any 		`json:"DR"`
 	UpInfo  []upinfoItem `json:"upinfo"`
 }
 
@@ -53,6 +59,54 @@ func Parse(raw []byte) ([]MessageEntry, error) {
 		entries = append(entries, MessageEntry{
 			Label:     "DevAddr",
 			Value:     msg.DevAddr,
+			Timestamp: now,
+		})
+	}
+
+	if msg.Region != nil {
+		entries = append(entries, MessageEntry{
+			Label:     "region",
+			Value:     msg.Region,
+			Timestamp: now,
+		})
+	}
+
+	if msg.Msgtype != nil {
+		entries = append(entries, MessageEntry{
+			Label:     "msgtype",
+			Value:     msg.Msgtype,
+			Timestamp: now,
+		})
+	}
+	
+	if msg.FPort != nil {
+		entries = append(entries, MessageEntry{
+			Label:     "FPort",
+			Value:     msg.FPort,
+			Timestamp: now,
+		})
+	}
+	
+	if msg.DR != nil {
+		entries = append(entries, MessageEntry{
+			Label:     "DR",
+			Value:     msg.DR,
+			Timestamp: now,
+		})
+	}
+
+	if msg.SessID != nil {
+		entries = append(entries, MessageEntry{
+			Label:     "SessID",
+			Value:     msg.SessID,
+			Timestamp: now,
+		})
+	}
+	
+	if msg.DeviceEui != nil {
+		entries = append(entries, MessageEntry{
+			Label:     "DeviceEui",
+			Value:     msg.DeviceEui,
 			Timestamp: now,
 		})
 	}
@@ -91,6 +145,7 @@ func Parse(raw []byte) ([]MessageEntry, error) {
 		addEntry("xtime", ui.XTime)
 	}
 
-	log.Printf("parse: extracted %d field(s) from %d upinfo item(s)", len(entries), len(msg.UpInfo))
+	// log.Printf("Region: %v, DevAddr: %v, SessID: %v, DeviceEui: %v, Freq: %v msgtype: %v FPort: %v DR: %v", msg.Region, msg.DevAddr, msg.SessID, msg.DeviceEui, msg.Freq, msg.Msgtype, msg.FPort, msg.DR)
+	// log.Printf("parse: extracted %d field(s) from %d upinfo item(s)", len(entries), len(msg.UpInfo))
 	return entries, nil
 }

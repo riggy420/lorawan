@@ -58,6 +58,9 @@ func startServer() {
 			for _, entry := range entries {
 				log.Printf("[%s] %s: %v", url, entry.Label, entry.Value)
 			}
+
+			log.Printf("[%s] parsed %d entries", url, len(entries))
+			internal.Write(entries)
 		}
 
 		clients = append(clients, wsClient)
