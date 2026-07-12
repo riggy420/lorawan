@@ -1,0 +1,4 @@
+# LoRaWAN server configuration
+websocket:
+  urls:
+    - ws://loranet01.ust.hk:7002/owner-c::2

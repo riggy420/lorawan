@@ -1,0 +1,12 @@
+services:
+  influxdb3:
+    image: quay.io/influxdb/influxdb3-core:latest
+    container_name: lorawan-influxdb3
+    ports:
+      - "8181:8181"
+    command:
+      - serve
+      - --node-id=lorawan-node
+      - --object-store=memory
+      - --without-auth
+    restart: unless-stopped
