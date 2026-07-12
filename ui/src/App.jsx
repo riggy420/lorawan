@@ -394,11 +394,21 @@ function SensorDetail({ eui }) {
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadDetail = useCallback(() => {
     fetchSensorDetail(eui)
       .then((d) => { setDetail(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, [eui]);
+
+  useEffect(() => {
+    setLoading(true);
+    loadDetail();
+  }, [loadDetail]);
+
+  useEffect(() => {
+    const interval = setInterval(loadDetail, 5000);
+    return () => clearInterval(interval);
+  }, [loadDetail]);
 
   if (loading) {
     return (
@@ -452,6 +462,7 @@ function SensorDetail({ eui }) {
             <p className="panel-kicker">Recent activity</p>
             <h2>Last {detail.entries.length} entries</h2>
           </div>
+          <div className="panel-meta">Auto-refresh every 5s</div>
         </div>
 
         <div className="sensor-list">
