@@ -318,12 +318,12 @@ function RegionList({ onSelectRegion, regions }) {
 
 // ── Level 2: Sensor list in a region ──────────────────────────────
 function SensorList({ region, onSelectSensor }) {
-  const [euis, setEuis] = useState([]);
+  const [sensors, setSensors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchSensorsByRegion(region)
-      .then((d) => { setEuis(d.deviceEuis || []); setLoading(false); })
+      .then((d) => { setSensors(d.sensors || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, [region]);
 
@@ -341,7 +341,7 @@ function SensorList({ region, onSelectSensor }) {
         <div className="hero-copy">
           <p className="eyebrow">{region}</p>
           <h1>Sensors</h1>
-          <p className="lead">{euis.length} device{euis.length !== 1 ? 's' : ''} in this region.</p>
+          <p className="lead">{sensors.length} device{sensors.length !== 1 ? 's' : ''} in this region.</p>
         </div>
       </div>
 
@@ -351,30 +351,30 @@ function SensorList({ region, onSelectSensor }) {
             <p className="panel-kicker">Device EUI</p>
             <h2>Active sensors</h2>
           </div>
-          <div className="panel-meta">{euis.length} device{euis.length !== 1 ? 's' : ''}</div>
+          <div className="panel-meta">{sensors.length} device{sensors.length !== 1 ? 's' : ''}</div>
         </div>
 
         <div className="sensor-list">
-          {euis.map((eui, i) => (
+          {sensors.map((sensor) => (
             <article
-              key={eui}
+              key={sensor.deviceEui}
               className="sensor-row"
               style={{ cursor: 'pointer' }}
-              onClick={() => onSelectSensor(eui)}
+              onClick={() => onSelectSensor(sensor.deviceEui)}
             >
               <div className="sensor-main">
                 <div className="status-glyph good" />
                 <div>
-                  <h3>Device {eui.length > 16 ? `${eui.slice(0, 16)}…` : eui}</h3>
-                  <p>EUI: {eui}</p>
+                  <h3>{sensor.deviceEui.length > 18 ? `${sensor.deviceEui.slice(0, 18)}…` : sensor.deviceEui}</h3>
+                  <p>EUI: {sensor.deviceEui}</p>
                 </div>
               </div>
               <div className="status-column">
                 <span className="badge good">Active</span>
               </div>
               <div className="telemetry-column">
-                <strong>#{i + 1}</strong>
-                <span>Index</span>
+                <strong>{formatTime(sensor.latestTime)}</strong>
+                <span>Last seen</span>
               </div>
               <div className="signal-column">
                 <span className="signal good">Online</span>
