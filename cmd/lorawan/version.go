@@ -17,6 +17,8 @@ var versionCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(connectionCmd)
+	rootCmd.AddCommand(queryDoorIDsCmd)
+	rootCmd.AddCommand(serveCmd)
 	rootCmd.AddCommand(startCmd)
 }
 

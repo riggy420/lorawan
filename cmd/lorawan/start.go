@@ -41,6 +41,17 @@ func startServer() {
 
 	fmt.Println("Starting LoRaWAN server...")
 
+	// Initialise shared InfluxDB client
+	if err := internal.InitDB(); err != nil {
+		log.Fatalf("failed to initialise database: %v", err)
+	}
+	defer internal.CloseDB()
+
+	// Ensure the measurement table exists with correct column types
+	if err := internal.EnsureMeasurement(); err != nil {
+		log.Fatalf("failed to ensure measurement: %v", err)
+	}
+
 	// Create a WSClient per configured URL
 	clients := make([]*WSClient, 0, len(cfg.Websocket.URLs))
 

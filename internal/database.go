@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"time"
 	"math"
 
 	"github.com/InfluxCommunity/influxdb3-go/v2/influxdb3"
@@ -357,6 +358,8 @@ func toInt64(v any) int64 {
 		return int64(n)
 	case int32:
 		return int64(n)
+	case uint64:
+		return int64(n)
 	default:
 		return 0
 	}
@@ -406,7 +409,12 @@ func QuerySensorsByRegion(region string) ([]SensorInfo, error) {
 		}
 		var latestTime int64
 		if v, ok := row["latest_time"]; ok {
-			latestTime = toInt64(v)
+			// InfluxDB v3 returns MAX(time) as a time.Time, not a raw int64.
+			if t, ok := v.(time.Time); ok {
+				latestTime = t.UnixNano()
+			} else {
+				latestTime = toInt64(v)
+			}
 		}
 		if eui != "" {
 			sensors = append(sensors, SensorInfo{DeviceEui: eui, LatestTime: latestTime})

@@ -180,6 +180,17 @@ function SensorDetail() {
     );
   }
 
+  // DEBUG: log raw entry keys and first entry fully
+  if (detail.entries.length > 0) {
+    console.log('SensorDetail — raw first entry:', detail.entries[0]);
+    console.log('SensorDetail — keys of first entry:', Object.keys(detail.entries[0]));
+    console.log('SensorDetail — time value:', detail.entries[0].time);
+    console.log('SensorDetail — typeof time:', typeof detail.entries[0].time);
+    console.log('SensorDetail — time constructor:', detail.entries[0].time?.constructor?.name);
+  }
+
+  const latestTime = detail.entries[0]?.time;
+
   return (
     <main className="workspace">
       <div className="hero">
@@ -188,6 +199,7 @@ function SensorDetail() {
           <h1 style={{ fontSize: 'clamp(1.2rem, 2vw, 1.8rem)', wordBreak: 'break-all' }}>{detail.deviceEui}</h1>
           <p className="lead">
             {detail.uplinks} uplinks · {detail.downlinks} downlinks
+            {latestTime != null ? ` · Last recorded ${formatTime(latestTime)}` : ''}
           </p>
         </div>
       </div>
